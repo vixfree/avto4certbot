@@ -1,16 +1,14 @@
 #### Package scripts for auto update all certs.
 #### Uses apache2 or nginx and the certbot package.
-#### avto4certbot version:0.5.4
+#### avto4certbot version:0.5.10
 
 * Install:
 
 ```
-git clone https://github.com/vixfree/auto4certbot.git
-or
-git clone https://develop.qbpro.ru/master/auto4certbot.git
-cd ~/auto4certbot/src
-mkdir -p /etc/auto4certbot
-cp * /etc/auto4certbot/
+git clone https://github.com/vixfree/avto4certbot.git
+cd ~/avto4certbot/src
+mkdir -p /etc/avto4certbot
+cp * /etc/avto4certbot/
 ```
 
 * edit avto4certbot.conf
@@ -35,7 +33,7 @@ avto4certbot.sh --help; this help
 * example crontab:
 
 ```
-## autocertbot
+## avtocertbot
 24 01 * * * root /etc/avto4certbot/avto4certbot.sh --update nginx
 ```
 
