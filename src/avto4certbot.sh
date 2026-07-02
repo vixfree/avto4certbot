@@ -4,7 +4,7 @@
 # license: GPL 2.0
 # create 2022
 #
-version="0.5.4";
+version="0.5.10";
 sname="avto4certbot";
 
 # script path
@@ -101,14 +101,22 @@ if [ ! -d $conf_dir ]; then
  mkdir -p $conf_dir;
 fi
 
-##
+## create info active config sites 
 if [[ "$opt" != "" ]] && [[ $opt != "nginx" ]] && [[ "$opt" == "apache" ]]; then
-  find $sites_apache/* -maxdepth 0 -type l -printf '%f\n' >$tmp_dir/active_sites.inf 2>/dev/null;
+  if [ "$(find $sites_apache/* -maxdepth 0 -type l -printf '%f\n'|wc -l)" != "0" ]; then
+    ls -F -n $sites_apache/*|awk '{print$9":"$11}' >$tmp_dir/active_sites.inf
+  else
+    touch $tmp_dir/active_sites.inf
+  fi
   get_tools[${#get_tools[@]}]="apache2";
   web_service="$apache2_service";
 fi
 if [[ "$opt" != "" ]] && [[ $opt != "apache" ]] && [[ "$opt" == "nginx" ]]; then
-  find $sites_nginx/* -maxdepth 0 -type l -printf '%f\n' >$tmp_dir/active_sites.inf 2>/dev/null;
+  if [ "$(find $sites_nginx/* -maxdepth 0 -type l -printf '%f\n'|wc -l)" != "0" ]; then
+    ls -F -n $sites_nginx/*|awk '{print$9":"$11}' >$tmp_dir/active_sites.inf
+  else
+    touch $tmp_dir/active_sites.inf
+  fi
   get_tools[${#get_tools[@]}]="nginx";
   web_service="nginx";
 fi
@@ -135,7 +143,7 @@ function checkDep() {
             reports=()
             reports[${#reports[@]}]="Sorry, there are no required packages to work, please install:${pkgdep[@]}"
             makeErr
-            exit
+            exit 0
         fi
     done
 }
@@ -143,16 +151,16 @@ function checkDep() {
 function swSites(){
 ## clear active sites
 if [ "$event_key" = "1" ]; then
-active_sites=( $(cat $tmp_dir/active_sites.inf) );
+  active_sites=( $(cat $tmp_dir/active_sites.inf|sed 's/:/ /g'|awk '{print$1}') );
   for ((xd=0; xd != ${#active_sites[@]}; xd++)); do
     if [[ "$opt" != "" ]] && [[ $opt != "nginx" ]] && [[ "$opt" == "apache" ]]; then
-      if [ -f $sites_apache/${active_sites[$xd]} ]; then
-        rm $sites_apache/${active_sites[$xd]}
+      if [ -f ${active_sites[$xd]} ]; then
+        rm ${active_sites[$xd]}
       fi
     fi
     if [[ "$opt" != "" ]] && [[ $opt != "apache" ]] && [[ "$opt" == "nginx" ]]; then
-      if [ -f $sites_nginx/${active_sites[$xd]} ]; then
-        rm $sites_nginx/${active_sites[$xd]}
+      if [ -f ${active_sites[$xd]} ]; then
+        rm ${active_sites[$xd]}
       fi
     fi
   done
@@ -170,13 +178,17 @@ if [ "$event_key" = "0" ]; then
   active_sites=( $(cat $tmp_dir/active_sites.inf) );
   for ((xd=0; xd != ${#active_sites[@]}; xd++)); do
     if [[ "$opt" != "" ]] && [[ $opt != "nginx" ]] && [[ "$opt" == "apache" ]]; then
-      if [ ! -f $sites_apache/${active_sites[$xd]} ]; then
-        ln -s $available_apache/${active_sites[$xd]} $sites_apache/${active_sites[$xd]}
+      get_enable=$(echo -e ${active_sites[$xd]}|sed 's/:/ /g'|awk '{print$1}');
+      get_available=$(echo -e ${active_sites[$xd]}|sed 's/:/ /g'|awk '{print$2}');
+      if [ ! -f $get_enable ]; then
+        ln -s $get_available $get_enable;
       fi
     fi
     if [[ "$opt" != "" ]] && [[ $opt != "apache" ]] && [[ "$opt" == "nginx" ]]; then
-      if [ ! -f $sites_nginx/${active_sites[$xd]} ]; then
-        ln -s $available_nginx/${active_sites[$xd]} $sites_nginx/${active_sites[$xd]}
+      get_enable=$(echo -e ${active_sites[$xd]}|sed 's/:/ /g'|awk '{print$1}');
+      get_available=$(echo -e ${active_sites[$xd]}|sed 's/:/ /g'|awk '{print$2}');
+      if [ ! -f $get_enable ]; then
+        ln -s $get_available $get_enable;
       fi
     fi
   done
