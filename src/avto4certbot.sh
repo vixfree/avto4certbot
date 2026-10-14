@@ -4,7 +4,7 @@
 # license: GPL 2.0
 # create 2022
 #
-version="0.5.10";
+version="0.5.11";
 sname="avto4certbot";
 
 # script path
@@ -336,6 +336,16 @@ for ((xd=0; xd != ${#domains[@]}; xd++)); do
 done
 }
 
+## --@F update domains from conf only
+function updateCerts(){
+for ((xd=0; xd != ${#domains[@]}; xd++)); do
+  local site_data=( $(echo -e ${domains[$xd]}|sed 's/ /\n /g') );
+  site_name="${site_data[0]}";
+  certbot --nginx certonly -n -d $site_name
+  sleep 2
+done
+}
+
 ##--@F restart services
 function updateScs(){
 if [[ "${services[@]}" != "" ]] && [[ "${#services[@]}" != "0" ]]; then
@@ -418,7 +428,7 @@ if [ "$opt" != "" ]; then
       createConf;
       systemctl start $web_service;
       sleep 2;
-      certbot -n renew;
+      updateCerts;
       scanSSL;
       event_key="0";
       systemctl stop $web_service;
@@ -437,7 +447,7 @@ if [ "$opt" != "" ]; then
     createConf;
     systemctl start $web_service;
     sleep 2;
-    certbot -n renew;
+    updateCerts;
     scanSSL;
     event_key="0";
     systemctl stop $web_service;

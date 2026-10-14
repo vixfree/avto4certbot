@@ -1,11 +1,17 @@
 #### Package scripts for auto update all certs.
 #### Uses apache2 or nginx and the certbot package.
-#### avto4certbot version:0.5.10
+#### avto4certbot version:0.5.11
+
+* If the error “Peer's Certificate issuer is not recognized” occurs, use the following parameter: 
+
+```
+git -c http.sslVerify=false clone https://develop.qbpro.ru/master/avto4certbot.git
+```
 
 * Install:
 
 ```
-git clone https://github.com/vixfree/avto4certbot.git
+git clone https://develop.qbpro.ru/master/avto4certbot.git
 cd ~/avto4certbot/src
 mkdir -p /etc/avto4certbot
 cp * /etc/avto4certbot/
